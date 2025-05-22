@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GlowSkin | Boutique</title>
+  <style>
+    /* Base */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fffaf8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #d77a61;
+      margin-bottom: 30px;
+    }
+    /* Barre de recherche */
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .search-bar input {
+      width: 60%;
+      max-width: 500px;
+      padding: 10px 15px 10px 35px;
+      border: 1px solid #d77a61;
+      border-radius: 20px;
+      font-size: 16px;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+    }
+    .search-bar input:focus {
+      box-shadow: 0 0 5px rgba(215, 122, 97, 0.4);
+    }
+    .search-icon {
+      position: absolute;
+      left: 21%;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #d77a61;
+      pointer-events: none;
+    }
+    .clear-search {
+      position: absolute;
+      right: 21%;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #d77a61;
+      cursor: pointer;
+      display: none;
+      font-weight: bold;
+    }
+    /* Onglets */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab-button {
+      background-color: #fce8e6;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 6px;
+      transition: background-color 0.3s;
+    }
+    .tab-button:hover {
+      background-color: #e8c4bd;
+    }
+    .tab-button.active {
+      background-color: #d77a61;
+      color: white;
+    }
+    /* Filtres par type de peau */
+    .skin-types {
+      display: none;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .skin-type-button {
+      background-color: #f0f0f0;
+      border: none;
+      padding: 8px 15px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .skin-type-button:hover {
+      background-color: #e0e0e0;
+    }
+    .skin-type-button.active {
+      background-color: #d77a61;
+      color: white;
+    }
+    /* Grille de produits */
+    .product-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      position: relative;
+      border: 1px solid #eee;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+    }
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 20px rgba(215, 122, 97, 0.4);
+    }
+    .product-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+    .product-name {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .product-price {
+      color: #d77a61;
+      font-weight: bold;
+    }
+    .product-card button {
+      background-color: #d77a61;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .product-card button:hover {
+      background-color: #b56550;
+    }
+    .no-results {
+      text-align: center;
+      grid-column: 1 / -1;
+      color: #d77a61;
+      font-style: italic;
+      padding: 20px;
+    }
+    /* Badge Nouveau */
+    .badge-new {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background-color: #d77a61;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 12px;
+      z-index: 5;
+      user-select: none;
+    }
+    /* Coeur favoris */
+    .favorite-heart {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 22px;
+      color: #d77a61;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+      z-index: 5;
+      text-shadow: 0 0 3px #fff;
+    }
+    .favorite-heart:hover {
+      transform: scale(1.2);
+    }
+    .favorite-heart.favorited {
+      color: #e63946;
+      text-shadow: 0 0 5px #e63946;
+    }
+    /* Stock status */
+    .stock-status {
+      margin-top: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      border-radius: 4px;
+      padding: 3px 7px;
+      display: inline-block;
+      user-select: none;
+    }
+    .stock-in {
+      color: #2a9d8f;
+      background-color: #d1f2eb;
+    }
+    .stock-limited {
+      color: #f4a261;
+      background-color: #fff3e0;
+    }
+    .stock-out {
+      color: #e76f51;
+      background-color: #fdecea;
+    }
+    /* Bouton voir plus */
+    .btn-see-more {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      background-color: #d77a61;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      font-size: 14px;
+      z-index: 10;
+    }
+    .product-card:hover .btn-see-more {
+      opacity: 1;
+    }
+    /* Panier flottant */
+    .floating-cart {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #d77a61;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(215, 122, 97, 0.3);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: white;
+      color: #d77a61;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      text-align: center;
+      font-size: 14px;
+    }
+    /* Modal Quick View */
+    #quickViewModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #quickViewContent {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      color: black;
+      position: relative;
+    }
+    #quickViewClose {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    /* Notification ajout au panier */
+    .added-to-cart-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #d77a61;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      z-index: 9999;
+      display: none;
+      animation: slideUp 0.3s forwards;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    /* Mode sombre */
+    body.dark-mode {
+      background-color: #121212;
+      color: #f1f1f1;
+    }
+    .dark-mode .product-card {
+      background-color: #1e1e1e;
+      border: 1px solid #333;
+      box-shadow: 0 2px 5px rgba(255, 255, 255, 0.05);
+    }
+    .dark-mode .product-card:hover {
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+    }
+    .dark-mode .favorite-heart {
+      color: #d77a61;
+      text-shadow: 0 0 3px #111;
+    }
+    .dark-mode .favorite-heart.favorited {
+      text-shadow: 0 0 5px #e63946;
+    }
+    .dark-mode .tab-button,
+    .dark-mode .skin-type-button {
+      background-color: #1e1e1e;
+      color: #f1f1f1;
+    }
+    .dark-mode .tab-button:hover,
+    .dark-mode .skin-type-button:hover {
+      background-color: #2a2a2a;
+    }
+    .dark-mode .tab-button.active,
+    .dark-mode .skin-type-button.active {
+      background-color: #d77a61;
+      color: white;
+    }
+    .dark-mode .search-bar input {
+      background-color: #2c2c2c;
+      color: #f1f1f1;
+      border: 1px solid #555;
+    }
+    .dark-mode .product-card img {
+      box-shadow: 0 0 10px #000;
+    }
+    /* Bouton mode sombre/clair */
+    .mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ⬇️ SEUL PANIER RESTANT -->
+<div class="floating-cart" onclick="window.location.href='panier.html'">
+  🛒
+  <div class="cart-badge" id="cartCount">0</div>
+</div>
+
+<!-- Bouton mode sombre -->
+<div class="mode-toggle" id="modeToggle" onclick="toggleDarkMode()">🌙</div>
+
+<h1>Boutique GlowSkin</h1>
+
+<!-- Barre de recherche -->
+<div class="search-bar">
+  <span class="search-icon">🔍</span>
+  <input type="text" id="searchInput" placeholder="Rechercher un produit..." />
+  <span class="clear-search" id="clearSearch">✕</span>
+</div>
+
+<!-- Tabs produits -->
+<div class="tabs">
+  <button class="tab-button active" data-type="all">Tous</button>
+  <button class="tab-button" data-type="nettoyant">Nettoyants</button>
+  <button class="tab-button" data-type="hydratant">Hydratants</button>
+  <button class="tab-button" data-type="sérum">Sérums</button>
+  <button class="tab-button" data-type="solaire">Solaires</button>
+</div>
+
+<!-- Filtres par type de peau -->
+<div class="skin-types" id="skinTypes">
+  <button class="skin-type-button" data-skin="all">Tous types</button>
+  <button class="skin-type-button" data-skin="normale">Normale</button>
+  <button class="skin-type-button" data-skin="sèche">Sèche</button>
+  <button class="skin-type-button" data-skin="grasse">Grasse</button>
+  <button class="skin-type-button" data-skin="mixte">Mixte</button>
+  <button class="skin-type-button" data-skin="sensible">Sensible</button>
+  <button class="skin-type-button" data-skin="acné">Acnéique</button>
+</div>
+
+<!-- Liste des produits -->
+<div class="product-container" id="productList"></div>
+
+<!-- Quick View Modal -->
+<div id="quickViewModal">
+  <div id="quickViewContent">
+    <span id="quickViewClose">&times;</span>
+    <div id="quickViewBody"></div>
+  </div>
+</div>
+
+<!-- Notification ajout au panier -->
+<div id="addToCartNotification" class="added-to-cart-notification">Produit ajouté ✅</div>
+
+<script>
+  const products = [
+    // Nettoyants visage
+    { name: "Gel Nettoyant Visage Purifiant", type: "nettoyant", skin: "grasse", price: "12.99€", image: "https://via.placeholder.com/300x300?text=Nettoyant  ", description: "Nettoie en profondeur et régule l'excès de sébum.", usage: "Matin et soir sur visage humide.", review: "4.5/5", stock: "in" },
+    { name: "Lait Démaquillant Mixte", type: "nettoyant", skin: "sèche", price: "18.50€", image: "https://via.placeholder.com/300x300?text=Lait+D  émaquillant", description: "Adapté aux peaux sèches ou sensibles.", usage: "Sur peau sèche, à rincer.", review: "4.7/5", stock: "in" },
+    { name: "Eau Micellaire Bioderma", type: "nettoyant", skin: "sensible", price: "15.75€", image: "https://via.placeholder.com/300x300?text=Eau+Micellaire  ", description: "Élimine les impuretés sans irriter.", usage: "Matin et soir sur coton.", review: "4.8/5", stock: "in" },
+    // Sérum
+    { name: "Sérum Acide Hyaluronique", type: "sérum", skin: "sèche", price: "24.00€", image: "https://via.placeholder.com/300x300?text=S érum+Hyaluronique", description: "Hydrate en profondeur.", usage: "Matin et soir sous la crème.", review: "4.8/5", stock: "in" },
+    { name: "Sérum Anti-Acné", type: "sérum", skin: "acné", price: "22.90€", image: "https://via.placeholder.com/300x300?text=Anti-Acn é", description: "Cible boutons et rougeurs.", usage: "Zones ciblées.", review: "4.6/5", stock: "in" },
+    // Crèmes & hydratants
+    { name: "Crème Hydratante Intense", type: "hydratant", skin: "sèche", price: "18.50€", image: "https://via.placeholder.com/300x300?text=Hydratant  ", description: "Hydrate intensément les peaux sèches.", usage: "Matin et soir sur peau propre.", review: "4.7/5", stock: "limited" },
+    { name: "Crème Mains Réparatrice", type: "hydratant", skin: "sèche", price: "9.90€", image: "https://via.placeholder.com/300x300?text=Mains  ", description: "Adoucit les mains abîmées.", usage: "Après chaque lavage.", review: "4.9/5", stock: "in" },
+    // Protection solaire
+    { name: "Crème Solaire SPF50", type: "solaire", skin: "sensible", price: "15.75€", image: "https://via.placeholder.com/300x300?text=Solaire  ", description: "Protège contre les UV.", usage: "Avant l'exposition.", review: "4.6/5", stock: "out" },
+    { name: "Fluide Solaire Matifiant", type: "solaire", skin: "grasse", price: "17.90€", image: "https://via.placeholder.com/300x300?text=Solaire+Matifiant  ", description: "Protège et matifie les peaux grasses.", usage: "Avant soleil.", review: "4.5/5", stock: "in" }
+  ];
+
+  let currentType = 'all';
+  let currentSkinType = 'all';
+  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  function renderProducts(type = 'all', skinType = 'all', searchTerm = '') {
+    const productList = document.getElementById('productList');
+    productList.innerHTML = '';
+    let filtered = type === 'all' ? [...products] : products.filter(p => p.type === type);
+    if (skinType !== 'all') filtered = filtered.filter(p => p.skin === skinType);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        p.description.toLowerCase().includes(term)
+      );
+    }
+    if (!filtered.length) {
+      productList.innerHTML = '<div class="no-results">Aucun produit ne correspond à votre recherche</div>';
+      return;
+    }
+    filtered.forEach((prod, index) => {
+      const isFav = favorites.includes(prod.name);
+      let stockClass = prod.stock === 'in' ? 'stock-in' : prod.stock === 'limited' ? 'stock-limited' : 'stock-out';
+      productList.innerHTML += `
+        <div class="product-card" data-name="${prod.name}">
+          <div class="favorite-heart ${isFav ? 'favorited' : ''}" title="Ajouter aux favoris">❤</div>
+          <img src="${prod.image}" alt="${prod.name}" />
+          <div class="product-name">${prod.name}</div>
+          <div class="product-price">${prod.price}</div>
+          <p>${prod.description}</p>
+          <div class="stock-status ${stockClass}">${prod.stock === 'in' ? 'En stock' : prod.stock === 'limited' ? 'Stock limité' : 'Rupture'}</div>
+          ${prod.stock === 'out' 
+            ? `<p style="color:#e76f51; font-weight:bold;">Indisponible</p>`
+            : `<button onclick="addToCart('${prod.name}')">Ajouter au panier</button>`}
+          <button class="btn-see-more" onclick="openQuickView('${prod.name}')">Voir plus</button>
+        </div>`;
+    });
+    attachEventListeners();
+    updateCartCount();
+  }
+
+  function attachEventListeners() {
+    document.querySelectorAll('.favorite-heart').forEach(heart => {
+      heart.addEventListener('click', () => {
+        const productCard = heart.closest('.product-card');
+        const productName = productCard.getAttribute('data-name');
+        if (favorites.includes(productName)) {
+          favorites = favorites.filter(fav => fav !== productName);
+          heart.classList.remove('favorited');
+        } else {
+          favorites.push(productName);
+          heart.classList.add('favorited');
+        }
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+      });
+    });
+  }
+
+  function addToCart(name) {
+    const product = products.find(p => p.name === name);
+    if (!product || product.stock === 'out') return;
+    const existing = cart.find(item => item.name === name);
+    if (existing) {
+      existing.quantity++;
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    showAddedToCartNotification();
+  }
+
+  function showAddedToCartNotification() {
+    const notification = document.getElementById('addToCartNotification');
+    notification.style.display = 'block';
+    setTimeout(() => {
+      notification.style.animation = 'slideUp 0.3s forwards';
+      setTimeout(() => notification.style.display = 'none', 300);
+    }, 1000);
+  }
+
+  function updateCartCount() {
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartCountEl = document.getElementById('cartCount');
+    if (cartCountEl) {
+      cartCountEl.textContent = count;
+    }
+  }
+
+  function openQuickView(name) {
+    const product = products.find(p => p.name === name);
+    const quickViewBody = document.getElementById('quickViewBody');
+    if (!product || !quickViewBody) return;
+    quickViewBody.innerHTML = `
+      <h2>${product.name}</h2>
+      <img src="${product.image}" style="width:100%;border-radius:8px;margin-bottom:15px;">
+      <p><strong>Description:</strong> ${product.description}</p>
+      <p><strong>Utilisation:</strong> ${product.usage}</p>
+      <p><strong>Type de peau:</strong> ${product.skin}</p>
+      <p><strong>Prix:</strong> ${product.price}</p>
+      <p><strong>Avis:</strong> ${product.review}</p>
+    `;
+    document.getElementById('quickViewModal').style.display = 'flex';
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('modeToggle').textContent = isDark ? '☀️' : '🌙';
+  }
+
+  window.onload = () => {
+    const savedMode = localStorage.getItem('darkMode') === 'true';
+    if (savedMode) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('modeToggle').textContent = '☀️';
+    }
+    renderProducts();
+  };
+
+  document.getElementById('quickViewClose')?.addEventListener('click', () => {
+    document.getElementById('quickViewModal').style.display = 'none';
+  });
+
+  document.getElementById('quickViewModal')?.addEventListener('click', e => {
+    if (e.target.id === 'quickViewModal') {
+      document.getElementById('quickViewModal').style.display = 'none';
+    }
+  });
+
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const skinTypeButtons = document.querySelectorAll('.skin-type-button');
+  const skinTypesContainer = document.getElementById('skinTypes');
+  const searchInput = document.getElementById('searchInput');
+  const clearSearch = document.getElementById('clearSearch');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      currentType = button.dataset.type;
+      if (currentType === 'all') {
+        skinTypesContainer.style.display = 'none';
+        currentSkinType = 'all';
+      } else {
+        skinTypesContainer.style.display = 'flex';
+        skinTypeButtons.forEach(btn => btn.classList.remove('active'));
+        skinTypeButtons[0].classList.add('active');
+        currentSkinType = 'all';
+      }
+      renderProducts(currentType, currentSkinType, searchInput.value);
+    });
+  });
+
+  skinTypeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      skinTypeButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      currentSkinType = button.dataset.skin;
+      renderProducts(currentType, currentSkinType, searchInput.value);
+    });
+  });
+
+  searchInput.addEventListener('input', e => {
+    clearSearch.style.display = e.target.value ? 'block' : 'none';
+    renderProducts(currentType, currentSkinType, e.target.value);
+  });
+
+  clearSearch.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearch.style.display = 'none';
+    renderProducts(currentType, currentSkinType, '');
+  });
+
+  // Exportation globale
+  window.addToCart = addToCart;
+  window.openQuickView = openQuickView;
+
+  // Initialisation
+  window.onload = () => {
+    const savedMode = localStorage.getItem('darkMode') === 'true';
+    if (savedMode) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('modeToggle').textContent = '☀️';
+    }
+    renderProducts();
+  };
+</script>
+</body>
+</html>
